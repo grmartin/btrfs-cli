@@ -1,0 +1,21 @@
+Fix reading compressed inline extents
+
+read_compressed_inline() passes the extent *type* (BTRFS_FILE_EXTENT_INLINE,
+0) to btrfs_decompress() instead of the extent's compression algorithm, so
+every compressed inline file fails with "invalid compression algorithm: 0".
+Hits any small file (< sectorsize) on a filesystem written with compress=.
+
+Present in upstream btrfs-fuse as of b03483b. Drop this patch once upstream
+fixes it.
+
+--- a/data.c
++++ b/data.c
+@@ -327,7 +327,7 @@
+ 	u32 csize = btrfs_file_extent_inline_item_len(path->nodes[0],
+ 						btrfs_item_nr(path->slots[0]));
+ 	u32 dsize = btrfs_file_extent_ram_bytes(path->nodes[0], fi);
+-	u8 compression = btrfs_file_extent_type(path->nodes[0], fi);
++	u8 compression = btrfs_file_extent_compression(path->nodes[0], fi);
+ 	char *cbuf;
+ 	int ret;
+ 

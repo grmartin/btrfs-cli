@@ -62,6 +62,14 @@ mkfs.btrfs --rootdir ./some-dir test.img
 - `compat/prelude.h` is force-included into every file. It maps `st_[amc]tim` to macOS's `st_[amc]timespec` and `EUCLEAN` to `EFTYPE`, and routes `pread` through `btrfs_cli_pread()` (`src/compat.c`). Upstream's `btrfs_read_from_disk()` loops forever when `pread` returns 0 at end of file, which happens with any truncated or non-btrfs input. The wrapper turns that into `EIO`.
 - `src/messages.c` replaces upstream's `messages.c`. It expands glibc's `%m` and sends every message to stderr, so `get` can stream clean data to stdout.
 
+## Patches to btrfs-fuse
+
+Fixes for upstream bugs live in `patches/` as `-p1` diffs against the btrfs-fuse root. At build time the Makefile copies each affected file (listed in `PATCHED_SRC`) into `build/patched/`, applies every patch there and compiles that copy. The submodule itself stays untouched. When upstream fixes a bug, delete its patch, and remove the file from `PATCHED_SRC` if nothing else patches it.
+
+| Patch | Fixes |
+| --- | --- |
+| `data-inline-compression.patch` | Small files that btrfs stores compressed inside its metadata failed to read with `invalid compression algorithm: 0`. This affects any filesystem written with `compress=`. |
+
 ## Licensing
 
 btrfs-cli is licensed under the **GNU General Public License v2.0** (GPL-2.0-only); see [LICENSE](LICENSE). This matches the most restrictive code it builds in: btrfs-fuse's `libs/raid56.[ch]`, `libs/tables.c` and `libs/list.h` are GPL-2.0-only. The rest of btrfs-fuse is MIT or GPL-2.0-or-later, and both are compatible with GPL-2.0.
