@@ -1,0 +1,6 @@
+-Icompat/include
+-include
+compat/prelude.h
+-Ibtrfs-fuse
+-I/opt/homebrew/include
+-DHAVE_LZO
